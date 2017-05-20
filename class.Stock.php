@@ -1,18 +1,19 @@
 <?php
 class Stock{
   function __construct(){
-    $this->name = $this->random_name(rand(1,3));
-    $this->symbol = substr($this->name, 0, rand(3, 4));
-    $this->price = round((rand(1, 500)/3), 2);
+    $this->name = ucwords($this->random_name(rand(1,3)));
+    $this->symbol = strtoupper(substr($this->name, 0, rand(3, 4)));
+    $this->price = number_format((rand(1, 500)/3), 2);
     $this->price_history = array($this->price);
     $this->active = true;
+    $this->change = 0;
   }
 
   function update_price($gain=true){
     if(!$this->active) return $this->price;
 
-    $amount = rand(0,9)+(rand(0,99)/100);
-    $this->price = $this->price + ($gain ? $amount : $amount * -1);
+    $this->change = number_format((rand(0,9)+(rand(0,99)/100) * ($gain ? 1 : -1)), 2);
+    $this->price = number_format(($this->price + $this->change), 2);
     $this->price_history[] = $this->price;
     $this->active = $this->price > 0;
 
