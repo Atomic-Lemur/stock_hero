@@ -13,3 +13,7 @@ This is a super basic stock fantasy game. This particular iteration does not uti
 ### Installation
 --------------------
 * Nothing to install!
+
+### Demo
+--------------------
+Check out the [Heroku demo](https://stock-hero.herokuapp.com/).
