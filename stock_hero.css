@@ -1,0 +1,37 @@
+:root {
+  --nav-background-color: #93caf2;
+  --nav-font-color: #fff;
+  --body-background-color: #fff;
+  --body-font-color: #666;
+}
+body{
+  background: var(--body-background-color);
+  color: var(--body-font-color);
+}
+.nav_color{
+  background: var(--nav-background-color);
+  color: var(--nav-font-color);
+}
+.nav-wrapper a{
+  color: var(--nav-font-color);
+}
+.gain{ color: #249f35; }
+.loss{
+  color: #7a2424;
+  font-weight: bold;
+}
+.stock{
+  font-size: 1.2rem;
+  line-height: 1.3rem;
+  margin: 0;
+  padding: 0;
+}
+.dead_stock{
+  color: #882b12;
+  text-decoration: line-through;
+}
+#buy_stock_form{
+  margin-top: 5rem;
+  border:1px solid #888;
+  border-radius: 5px;
+}

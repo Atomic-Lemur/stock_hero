@@ -1,7 +1,10 @@
 <?php
-session_start();
 function __autoload($class_name){
     include_once("class.".$class_name.".php");
+}
+
+if(session_status() == PHP_SESSION_NONE) {
+    session_start();
 }
 
 if(isset($_POST['action'])){
@@ -34,22 +37,27 @@ if($action=='restart'){
 if(!isset($_SESSION['stocks'])){
   $_SESSION['my_portfolio'] = new Portfolio();
 
-  $stock_count = isset($_GET['stock_count']) ? $_GET['stock_count'] : rand(5, 10);
+  $stock_count = isset($_GET['stock_count']) ? $_GET['stock_count'] : rand(9, 20);
   for($x=0; $x<$stock_count; ++$x){
     $stock = new Stock();
     $_SESSION['stocks'][$stock->symbol] = $stock;
   }
+  $_SESSION['my_portfolio']->round++;
 
 }elseif(!$action){
   foreach($_SESSION['stocks'] as $one_stock){
     $news = $one_stock->stock_news();
     if(!$news){
-      $one_stock->update_price(rand(0, 1));
+      $one_stock->update_price(rand(-1, 1));
     }else{
       $one_stock->update_price($news['gain']);
     }
   }
+  $_SESSION['my_portfolio']->round++;
 }
+
+$message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message'=>'You won!') : $message;
+
 ?>
 
 <!DOCTYPE html>
@@ -65,46 +73,7 @@ if(!isset($_SESSION['stocks'])){
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-  <style>
-    :root {
-      --nav-background-color: #93caf2;
-      --nav-font-color: #fff;
-      --body-background-color: #fff;
-      --body-font-color: #666;
-    }
-    body{
-      background: var(--body-background-color);
-      color: var(--body-font-color);
-    }
-    .nav_color{
-      background: var(--nav-background-color);
-      color: var(--nav-font-color);
-    }
-    .nav-wrapper a{
-      color: var(--nav-font-color);
-    }
-    .gain{ color: #249f35; }
-    .loss{
-      color: #7a2424;
-      font-weight: bold;
-    }
-    .stock{
-      font-size: 1.2rem;
-      line-height: 1.3rem;
-      margin: 0;
-      padding: 0;
-    }
-    .dead_stock{
-      color: #882b12;
-      text-decoration: line-through;
-    }
-    #buy_stock_form{
-      margin-top: 5rem;
-      border:1px solid #888;
-      border-radius: 5px;
-    }
-  </style>
+  <link href="stock_hero.css" rel="stylesheet">
 </head>
 <body>
   <?php
@@ -115,7 +84,7 @@ if(!isset($_SESSION['stocks'])){
   <nav class="nav-extended">
     <div class="nav-wrapper nav_color">
       <a href="#!" class="brand-logo center"><i class="material-icons">trending_up</i>Stock Hero</a>
-      <ul class="right hide-on-med-and-down">
+      <ul class="right">
         <li><a href="?" title="continue"><i class="material-icons">play_arrow</i></a></li>
         <li><a href="?action=restart" title="restart"><i class="material-icons">refresh</i></a></li>
       </ul>
@@ -125,9 +94,12 @@ if(!isset($_SESSION['stocks'])){
   <div class="container">
     <div class="row">
 
-      <div class="col s12 m6">
+      <div class="col s12 m5">
         <h3>Your Portfolio</h3>
-        <p>Bank: $<?php echo $_SESSION['my_portfolio']->bank ?></p>
+        <ul>
+          <li><b>Round</b>: <?php echo $_SESSION['my_portfolio']->round ?></li>
+          <li><b>Bank</b>: $<?php echo number_format($_SESSION['my_portfolio']->bank, 2) ?></li>
+        </ul>
 
         <table id="portfolio" class="striped">
           <thead>
@@ -139,16 +111,24 @@ if(!isset($_SESSION['stocks'])){
             </tr>
           </thead>
           <?
+          $portfolio_value = 0;
           foreach($_SESSION['my_portfolio']->stocks as $stock_symbol => $stock_qty){
+            $value = number_format(($_SESSION['stocks'][$stock_symbol]->price * $stock_qty), 2);
+            $portfolio_value = $portfolio_value + ($_SESSION['stocks'][$stock_symbol]->price * $stock_qty);
             echo '
             <tr class="stock">
               <td class="center stock_symbol">'.$stock_symbol.'</td>
               <td class="center">'.$stock_qty.'</td>
-              <td class="center">$'.number_format(($_SESSION['stocks'][$stock_symbol]->price * $stock_qty), 2).'</td>
+              <td class="center">$'.$value.'</td>
               <td class="center"><a href="?action=sell&sell_stock_symbol='.$stock_symbol.'" title="sell all of this stock"><i class="material-icons">shopping_basket</i></a></td>
             </tr>';
           }
+
           ?>
+          <tr class="stock">
+            <td colspan=2>total</td>
+            <td colspan=2>$<?php echo number_format($portfolio_value, 2); ?></td>
+          </tr>
         </table>
 
         <form action="" method="POST" id="buy_stock_form" class="col s12">
@@ -168,7 +148,7 @@ if(!isset($_SESSION['stocks'])){
             </div>
 
             <div class="input-field col s5">
-              <input name="buy_stock_amount" class="center" placeholder="amount" />
+              <input type="number" min="0" name="buy_stock_amount" class="center" placeholder="amount" />
             </div>
 
             <div class="input-field col s2">
@@ -180,7 +160,7 @@ if(!isset($_SESSION['stocks'])){
 
       </div><!--col-->
 
-      <div class="col s12 m6">
+      <div class="col s12 m7">
         <h3>The Market</h3>
         <table id="market" class="striped">
           <thead>

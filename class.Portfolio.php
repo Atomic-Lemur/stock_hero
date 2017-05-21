@@ -2,7 +2,9 @@
 class Portfolio{
   function __construct(){
     $this->stocks = array();
-    $this->bank = 1000;
+    $this->bank = 10000;
+    $this->goal = 30000;
+    $this->round = 0;
   }
 
   function update_bank($amount){
@@ -50,6 +52,10 @@ class Portfolio{
     }else{
       return array("result"=> false, "message" => "Unable to complete the sale.");
     }
+  }
+
+  function did_win(){
+    return $this->bank >= $this->goal;
   }
 
 }
