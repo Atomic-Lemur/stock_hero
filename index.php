@@ -1,4 +1,5 @@
 <?php
+require('helpers.php');
 function __autoload($class_name){
     include_once("class.".$class_name.".php");
 }
@@ -14,6 +15,7 @@ if(isset($_POST['action'])){
 }else{
   $action = false;
 }
+$message = false;
 
 if($action=='restart'){
   session_destroy();
@@ -37,7 +39,7 @@ if($action=='restart'){
 if(!isset($_SESSION['stocks'])){
   $_SESSION['my_portfolio'] = new Portfolio();
 
-  $stock_count = isset($_GET['stock_count']) ? $_GET['stock_count'] : rand(9, 20);
+  $stock_count = isset($_GET['stock_count']) ? $_GET['stock_count'] : random_int(9, 20);
   for($x=0; $x<$stock_count; ++$x){
     $stock = new Stock();
     $_SESSION['stocks'][$stock->symbol] = $stock;
@@ -48,7 +50,7 @@ if(!isset($_SESSION['stocks'])){
   foreach($_SESSION['stocks'] as $one_stock){
     $news = $one_stock->stock_news();
     if(!$news){
-      $one_stock->update_price(rand(-1, 1));
+      $one_stock->update_price(random_int(-1, 1));
     }else{
       $one_stock->update_price($news['gain']);
     }
@@ -73,7 +75,8 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="stock_hero.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="stock_hero.css">
 </head>
 <body>
   <?php
@@ -106,6 +109,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
           <thead>
             <tr>
               <th class="center">Symbol</th>
+              <th class="center">Purchase Price</th>
               <th class="center">Qty</th>
               <th class="center">Value</th>
               <th class="center">Sell Stock</th>
@@ -119,16 +123,17 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
             echo '
             <tr class="stock">
               <td class="center stock_symbol">'.$stock_symbol.'</td>
+              <td class="center '.($_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol] < $_SESSION['stocks'][$stock_symbol]->price ? 'gain' : 'loss').'">$'.$_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol].'</td>
               <td class="center">'.$stock_qty.'</td>
               <td class="center">$'.$value.'</td>
-              <td class="center"><a href="?action=sell&sell_stock_symbol='.$stock_symbol.'" title="sell all of this stock"><i class="material-icons">shopping_basket</i></a></td>
+              <td class="center"><a href="?action=sell&sell_stock_symbol='.$stock_symbol.'" title="sell all of this stock"><i class="fa fa-money"></i></a></td>
             </tr>';
           }
 
           ?>
           <tr class="stock">
             <td colspan=2>total</td>
-            <td colspan=2>$<?php echo number_format($portfolio_value, 2); ?></td>
+            <td colspan=3>$<?php echo number_format($portfolio_value, 2); ?></td>
           </tr>
         </table>
 
@@ -180,9 +185,18 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
               <td class="stock_name">'.$one_stock->name.'</td>
               <td class="center stock_symbol">'.$one_stock->symbol.'</td>
               <td class="center">$'.$one_stock->price.'</td>
-              <td class="center '.($one_stock->change > 0 ? 'gain' : 'loss').'">
+              <td class="center'.($one_stock->news ? ' tooltipped' : null).' '.($one_stock->change > 0 ? 'gain' : 'loss').'"
+                '.($one_stock->news ?
+                'data-position="left"
+                data-delay="50"
+                data-tooltip="'.$one_stock->news.'"
+                onclick="Materialize.toast(`'.$one_stock->news.'`, 3000, `'.($one_stock->change > 0 ? 'green' : 'red').'`);"'
+                :
+                null
+                ).'
+              >
                 '.$one_stock->change.'&percnt;
-                '.($one_stock->news ? ' <i class="tiny material-icons" title="'.$one_stock->news.'" onclick="Materialize.toast(`'.$one_stock->news.'`, 3000, `rounded'.($one_stock->change > 0 ? ' green' : ' red').'`);">info_outline</i>' : null).'
+                '.($one_stock->news ? ' <i class="tiny material-icons">info_outline</i>' : null).'
               </td>
             </tr>';
           }
@@ -192,6 +206,16 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
 
     </div><!--row-->
   </div><!--/.container -->
+
+  <footer class="page-footer nav_color">
+        <div class="row">
+          <div class="col s12">
+            2017 created by Jon Link (<a href="https://www.linkedin.com/in/jon-link/">LinkedIn</a> | <a href="https://github.com/jonnylink">Github</a>)
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <script>
     $(document).ready(function() {

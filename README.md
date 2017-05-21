@@ -2,13 +2,13 @@
 
 ### ABOUT
 --------------------
-This is a super basic stock fantasy game. This particular iteration does not utilize any database, but is instead a dead simple session based game with just two classes. The whole thing is made just slightly with the use of the [Materialize framework](http://materializecss.com).
+This is a super basic stock fantasy game written in a day. This particular iteration does not utilize any database, but is instead a dead simple session based game with just two classes. The whole thing is made just slightly nice looking with the use of the [Materialize framework](http://materializecss.com).
 
 ### FEATURES
 --------------------
 * fake stocks with prices that move up and down randomly
-* random events that drive prices
-* buy and sell a portfolio of stocks
+* random events that drive prices up or down
+* portfolio tracking to buy and sell a portfolio of stocks
 
 ### Installation
 --------------------

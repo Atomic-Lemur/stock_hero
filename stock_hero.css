@@ -7,6 +7,9 @@
 body{
   background: var(--body-background-color);
   color: var(--body-font-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .nav_color{
   background: var(--nav-background-color);
@@ -34,4 +37,8 @@ body{
   margin-top: 5rem;
   border:1px solid #888;
   border-radius: 5px;
+}
+
+main {
+  flex: 1 0 auto;
 }
