@@ -50,7 +50,7 @@ if(!isset($_SESSION['stocks'])){
   foreach($_SESSION['stocks'] as $one_stock){
     $news = $one_stock->stock_news();
     if(!$news){
-      $one_stock->update_price(random_int(-1, 1));
+      $one_stock->update_price(random_int(-3, 3));
     }else{
       $one_stock->update_price($news['gain']);
     }
@@ -136,9 +136,9 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
           }
 
           ?>
-          <tr class="stock">
-            <td colspan=2>total</td>
-            <td colspan=3>$<?php echo number_format($portfolio_value, 2); ?></td>
+          <tr class="stock grey white-text">
+            <td colspan="2" class="center">TOTAL</td>
+            <td colspan="3" class="center">$<?php echo number_format($portfolio_value, 2); ?></td>
           </tr>
         </table>
 
