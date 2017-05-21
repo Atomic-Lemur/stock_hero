@@ -97,7 +97,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   <div class="container">
     <div class="row">
 
-      <div class="col s12 m5">
+      <div class="col s12 m6 l5">
         <h3>Your Portfolio</h3>
         <ul>
           <li><b>Round</b>: <?php echo $_SESSION['my_portfolio']->round ?></li>
@@ -123,7 +123,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
             echo '
             <tr class="stock">
               <td class="center stock_symbol">'.$stock_symbol.'</td>
-              <td class="center '.($_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol] < $_SESSION['stocks'][$stock_symbol]->price ? 'gain' : 'loss').'">$'.$_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol].'</td>
+              <td class="center '.($_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol] <= $_SESSION['stocks'][$stock_symbol]->price ? 'gain' : 'loss').'">$'.$_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol].'</td>
               <td class="center">'.$stock_qty.'</td>
               <td class="center">$'.$value.'</td>
               <td class="center"><a href="?action=sell&sell_stock_symbol='.$stock_symbol.'" title="sell all of this stock"><i class="fa fa-money"></i></a></td>
@@ -166,7 +166,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
 
       </div><!--col-->
 
-      <div class="col s12 m7">
+      <div class="col s12 m6 l7">
         <h3>The Market</h3>
         <table id="market" class="striped">
           <thead>
@@ -185,7 +185,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
               <td class="stock_name">'.$one_stock->name.'</td>
               <td class="center stock_symbol">'.$one_stock->symbol.'</td>
               <td class="center">$'.$one_stock->price.'</td>
-              <td class="center'.($one_stock->news ? ' tooltipped' : null).' '.($one_stock->change > 0 ? 'gain' : 'loss').'"
+              <td class="center'.($one_stock->news ? ' tooltipped' : null).' '.($one_stock->change >= 0 ? 'gain' : 'loss').'"
                 '.($one_stock->news ?
                 'data-position="left"
                 data-delay="50"
