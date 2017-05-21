@@ -46,7 +46,7 @@ if(!isset($_SESSION['stocks'])){
   }
   $_SESSION['my_portfolio']->round++;
 
-}elseif(!$action){
+}else{
   foreach($_SESSION['stocks'] as $one_stock){
     $news = $one_stock->stock_news();
     if(!$news){
@@ -77,6 +77,11 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stock_hero.css">
+  <script>
+    if(!<?php echo $_SESSION['my_portfolio']->did_win() ? 'true' : 'false'; ?>){
+      setInterval( () => { window.location.assign(window.location.pathname); }, 15000);
+    }
+  </script>
 </head>
 <body>
   <?php
@@ -86,9 +91,9 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   ?>
   <nav class="nav-extended">
     <div class="nav-wrapper nav_color">
-      <a href="#!" class="brand-logo center"><i class="material-icons">trending_up</i>Stock Hero</a>
+      &nbsp;&nbsp; <a href="#!" class="brand-logo left"><i class="material-icons">trending_up</i>Stock Hero</a>
       <ul class="right">
-        <li><a href="?" title="continue"><i class="material-icons">play_arrow</i></a></li>
+        <li><a href="?" title="skip turn"><i class="material-icons">skip_next</i></a></li>
         <li><a href="?action=restart" title="restart"><i class="material-icons">refresh</i></a></li>
       </ul>
     </div>
