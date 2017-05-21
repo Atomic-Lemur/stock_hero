@@ -99,6 +99,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
         <ul>
           <li><b>Round</b>: <?php echo $_SESSION['my_portfolio']->round ?></li>
           <li><b>Bank</b>: $<?php echo number_format($_SESSION['my_portfolio']->bank, 2) ?></li>
+          <li><b>Goal</b>: $<?php echo number_format($_SESSION['my_portfolio']->goal, 2) ?></li>
         </ul>
 
         <table id="portfolio" class="striped">
