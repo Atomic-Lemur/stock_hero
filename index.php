@@ -42,7 +42,12 @@ if(!isset($_SESSION['stocks'])){
 
 }elseif(!$action){
   foreach($_SESSION['stocks'] as $one_stock){
-    $one_stock->update_price(rand(0, 1));
+    $news = $one_stock->stock_news();
+    if(!$news){
+      $one_stock->update_price(rand(0, 1));
+    }else{
+      $one_stock->update_price($news['gain']);
+    }
   }
 }
 ?>
@@ -194,7 +199,10 @@ if(!isset($_SESSION['stocks'])){
               <td class="stock_name">'.$one_stock->name.'</td>
               <td class="center stock_symbol">'.$one_stock->symbol.'</td>
               <td class="center">$'.$one_stock->price.'</td>
-              <td class="center '.($one_stock->change > 0 ? 'gain' : 'loss').'">'.$one_stock->change.'</td>
+              <td class="center '.($one_stock->change > 0 ? 'gain' : 'loss').'">
+                '.$one_stock->change.'&percnt;
+                '.($one_stock->news ? ' <i class="tiny material-icons" title="'.$one_stock->news.'" onclick="Materialize.toast(`'.$one_stock->news.'`, 3000, `rounded'.($one_stock->change > 0 ? ' green' : ' red').'`);">info_outline</i>' : null).'
+              </td>
             </tr>';
           }
           ?>

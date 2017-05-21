@@ -5,20 +5,94 @@ class Stock{
     $this->symbol = strtoupper(substr($this->name, 0, rand(3, 4)));
     $this->price = number_format((rand(1, 500)/3), 2);
     $this->price_history = array($this->price);
-    $this->active = true;
     $this->change = 0;
+    $this->news = false;
+    $this->active = true;
   }
 
-  function update_price($gain=true){
+  function update_price($gain=-1){
     if(!$this->active) return $this->price;
-
-    $this->change = number_format((rand(0,9)+(rand(0,99)/100) * ($gain ? 1 : -1)), 2);
-    $this->price = number_format(($this->price + $this->change), 2);
+    $this->change = (rand(0, 100)/100) + $gain;
+    $this->price = number_format($this->price + ($this->price * ($this->change / 100)), 2);
     $this->price_history[] = $this->price;
     $this->active = $this->price > 0;
 
     return $this->price;
   }
+
+  function update_news($story=false){
+    $this->news = $story;
+  }
+
+  function stock_news(){
+     $events = array(
+      array("story"=> "positive quarterly financial results expected to be announced", "gain"=> 2),
+      array("story"=> "positive full year financial results expected to be announced", "gain"=> 3),
+      array("story"=> "negative quarterly financial results expected to be announced", "gain"=> -2),
+      array("story"=> "negative full year financial results expected to be announced", "gain"=> -4),
+      array("story"=> "beat the holy hell out of market expectations", "gain"=> 3),
+      array("story"=> "just barely market expectations", "gain"=> 1),
+      array("story"=> "did not meet market expectations", "gain"=> -2),
+      array("story"=> "news of a buy out offer in the air", "gain"=> 1),
+      array("story"=> "crap! a supply shortage", "gain"=> -2),
+      array("story"=> "lost an important customer after disastrous lunch meeting", "gain"=> -3),
+      array("story"=> "supply costs way down", "gain"=> 1),
+      array("story"=> "CEO featured on cover of Cool CEOs Magazine", "gain"=> 1),
+      array("story"=> "CEO resigned in disgrace", "gain"=> -3),
+      array("story"=> "CEO dies in kayaking accident", "gain"=> -2),
+      array("story"=> "employees unionize", "gain"=> -2),
+      array("story"=> "employees strike for better salad bar in cafeteria", "gain"=> -1),
+      array("story"=> "new industry regulations", "gain"=> -2),
+      array("story"=> "industry deregulation", "gain"=> 2),
+      array("story"=> "acquired a weird competitor for too much money", "gain"=> -5),
+      array("story"=> "pulled off an amazing acquisition", "gain"=> 3),
+      array("story"=> "new dividends announced", "gain"=> 1),
+      array("story"=> "dividend program ended", "gain"=> -2),
+      array("story"=> "mid-level managers investigated for cooking books", "gain"=> -3),
+      array("story"=> "insider trading investigation", "gain"=> -3),
+      array("story"=> "layoffs announced", "gain"=> -2),
+      array("story"=> "stock buy back announced", "gain"=> 1),
+      array("story"=> "supplier disruption", "gain"=> -2),
+      array("story"=> "stock upgraded", "gain"=> 2),
+      array("story"=> "stock downgraded", "gain"=> -2),
+      array("story"=> "featured on Buy It Stock TV Show", "gain"=> 2),
+      array("story"=> "added to Top Stocks To Buy List", "gain"=> 2),
+      array("story"=> "featured in the Floorsteet Journal", "gain"=> 1),
+      array("story"=> "stock genius Warren Puffin buys 20000 shares", "gain"=> 3),
+      array("story"=> "stock genius Warren Puffin sells all his shares", "gain"=> -4),
+      array("story"=> "amazing new product announced", "gain"=> 2),
+      array("story"=> "shitty new product announced", "gain"=> -2),
+      array("story"=> "sales up", "gain"=> 2),
+      array("story"=> "COO resigns to work for competitor", "gain"=> -3),
+      array("story"=> "CTO hired from competitor", "gain"=> 2),
+      array("story"=> "world reknown blogger Katy Kat recommends buying", "gain"=> 3),
+      array("story"=> "fire destroys warehouse", "gain"=> -2),
+      array("story"=> "fire destroys competitor's factory", "gain"=> 1),
+      array("story"=> "CEO insulted important congresswoman", "gain"=> -2),
+      array("story"=> "company janitor created new patent pending design", "gain"=> 1),
+      array("story"=> "COO caught drunkenly peeing in bushes at local park", "gain"=> -1),
+      array("story"=> "voted top 10 places to work by Better Homes and Ponds", "gain"=> 2),
+      array("story"=> "lobbyist scores a win in the senate", "gain"=> 2),
+      array("story"=> "company-wide fight club uncovered", "gain"=> -3)
+    );
+    if(rand(0, 100) <= 30){
+      $the_event = $events[rand(0, sizeof($events))];
+      $this->update_news($the_event["story"]);
+      return $the_event;
+    }else{
+      $this->update_news(false);
+      return false;
+    }
+  }
+
+  //      "interest rate raised"=>0,
+  //      "interest rate lowered"=>1,
+  //      "amazing president elected"=>1,
+  //      "horrible president with small hands elected"=>0,
+  //      "consumer spending up"=>1,
+  //      "consumer spending down"=>0,
+  //      "military action announced"=>0,
+
 
   function random_name($name_word_length=2){
     $word_list = Array(
