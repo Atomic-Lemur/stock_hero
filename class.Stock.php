@@ -10,9 +10,13 @@ class Stock{
     $this->active = true;
   }
 
-  function update_price($gain=-1){
+  function update_price($change=false){
     if(!$this->active) return $this->price;
-    $this->change = (random_int(0, 100)/100) + $gain;
+    if($change)
+      $this->change = $change + (random_int(0, 100)/100);
+    else{
+      $this->change = random_int(-3, 3) + (random_int(0, 100)/100);
+    }
     $this->price = sprintf("%.2f", ($this->price + ($this->price * ($this->change / 100))) );
     $this->price_history[] = $this->price;
     $this->active = $this->price > 0;
@@ -82,6 +86,9 @@ class Stock{
       array("story"=> "world reknown blogger Katy Kat recommends buying", "gain"=> 4),
       array("story"=> "fire destroys warehouse", "gain"=> -11),
       array("story"=> "fire destroys competitor's factory", "gain"=> 8),
+      array("story"=> "product praised by late night TV host, Sherman O'Odoul", "gain"=> random_int(6, 20)),
+      array("story"=> "product featured on Amazanan", "gain"=> random_int(8, 15)),
+      array("story"=> "Brud Pith tweets about company", "gain"=> 7),
       array("story"=> "CEO insulted important congresswoman", "gain"=> -5),
       array("story"=> "company janitor created new patent pending design", "gain"=> random_int(1, 19)),
       array("story"=> "COO caught drunkenly peeing in bushes at local park", "gain"=> -7),

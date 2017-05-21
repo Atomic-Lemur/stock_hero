@@ -50,7 +50,7 @@ if(!isset($_SESSION['stocks'])){
   foreach($_SESSION['stocks'] as $one_stock){
     $news = $one_stock->stock_news();
     if(!$news){
-      $one_stock->update_price(random_int(-3, 3));
+      $one_stock->update_price();
     }else{
       $one_stock->update_price($news['gain']);
     }
