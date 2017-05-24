@@ -1,65 +1,15 @@
 <?php
+$message = null;
 require('helpers.php');
 function __autoload($class_name){
     include_once("class.".$class_name.".php");
 }
-
-if(session_status() == PHP_SESSION_NONE) {
+if(session_status() == PHP_SESSION_NONE){
     session_start();
 }
-
-if(isset($_POST['action'])){
-  $action = $_POST['action'];
-}elseif(isset($_GET['action'])){
-  $action = $_GET['action'];
-}else{
-  $action = false;
-}
-$message = false;
-
-if($action=='restart'){
-  session_destroy();
-  session_start();
-
-}elseif($action=='buy'){
-  $message = $_SESSION['my_portfolio']->buy_stock(
-    $_POST['buy_stock_symbol'],
-    $_POST['buy_stock_amount'],
-    $_SESSION['stocks'][$_POST['buy_stock_symbol']]->price
-  );
-
-}elseif($action=='sell'){
-  $message = $_SESSION['my_portfolio']->sell_stock(
-    $_GET['sell_stock_symbol'],
-    $_SESSION['my_portfolio']->stocks[$_GET['sell_stock_symbol']],
-    $_SESSION['stocks'][$_GET['sell_stock_symbol']]->price
-  );
-}
-
-if(!isset($_SESSION['stocks'])){
-  $_SESSION['my_portfolio'] = new Portfolio();
-
-  $stock_count = isset($_GET['stock_count']) ? $_GET['stock_count'] : random_int(9, 20);
-  for($x=0; $x<$stock_count; ++$x){
-    $stock = new Stock();
-    $_SESSION['stocks'][$stock->symbol] = $stock;
-  }
-  $_SESSION['my_portfolio']->round++;
-
-}else{
-  foreach($_SESSION['stocks'] as $one_stock){
-    $news = $one_stock->stock_news();
-    if(!$news){
-      $one_stock->update_price();
-    }else{
-      $one_stock->update_price($news['gain']);
-    }
-  }
-  $_SESSION['my_portfolio']->round++;
-}
-
-$message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message'=>'You won!') : $message;
-
+require('controller.php');
+require('round.php');
+$message = $_SESSION['player']->is_winner() ? array('result'=>true, 'message'=>'You won!') : $message;
 ?>
 
 <!DOCTYPE html>
@@ -77,11 +27,6 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stock_hero.css">
-  <script>
-    if(!<?php echo $_SESSION['my_portfolio']->did_win() ? 'true' : 'false'; ?>){
-      setInterval( () => { window.location.assign(window.location.pathname); }, 15000);
-    }
-  </script>
 </head>
 <body>
   <?php
@@ -93,6 +38,7 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
     <div class="nav-wrapper nav_color">
       &nbsp;&nbsp; <a href="#!" class="brand-logo left"><i class="material-icons">trending_up</i>Stock Hero</a>
       <ul class="right">
+        <li>Updates in: <span id="timer"><?php echo $_SESSION['player']->round_time/1000; ?></span></li>
         <li><a href="?" title="skip turn"><i class="material-icons">skip_next</i></a></li>
         <li><a href="?action=restart" title="restart"><i class="material-icons">refresh</i></a></li>
       </ul>
@@ -105,32 +51,32 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
       <div class="col s12 m6 l5">
         <h3>Your Portfolio</h3>
         <ul>
-          <li><b>Round</b>: <?php echo $_SESSION['my_portfolio']->round ?></li>
-          <li><b>Bank</b>: $<?php echo number_format($_SESSION['my_portfolio']->bank, 2) ?></li>
-          <li><b>Goal</b>: $<?php echo number_format($_SESSION['my_portfolio']->goal, 2) ?></li>
+          <li><b>Round</b>: <?php echo $_SESSION['player']->round ?></li>
+          <li><b>Bank</b>: $<?php echo number_format($_SESSION['player']->bank, 2) ?></li>
+          <li><b>Goal</b>: $<?php echo number_format($_SESSION['player']->goal, 2) ?></li>
         </ul>
 
         <table id="portfolio" class="striped">
           <thead>
             <tr>
               <th class="center">Symbol</th>
-              <th class="center">Purchase Price</th>
               <th class="center">Qty</th>
               <th class="center">Value</th>
+              <th class="center">Gain / Loss</th>
               <th class="center">Sell Stock</th>
             </tr>
           </thead>
           <?
           $portfolio_value = 0;
-          foreach($_SESSION['my_portfolio']->stocks as $stock_symbol => $stock_qty){
+          foreach($_SESSION['player']->portfolio->stock_qtys as $stock_symbol => $stock_qty){
             $value = number_format(($_SESSION['stocks'][$stock_symbol]->price * $stock_qty), 2);
             $portfolio_value = $portfolio_value + ($_SESSION['stocks'][$stock_symbol]->price * $stock_qty);
             echo '
             <tr class="stock">
               <td class="center stock_symbol">'.$stock_symbol.'</td>
-              <td class="center '.($_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol] <= $_SESSION['stocks'][$stock_symbol]->price ? 'gain' : 'loss').'">$'.$_SESSION['my_portfolio']->stock_purchase_prices[$stock_symbol].'</td>
               <td class="center">'.$stock_qty.'</td>
               <td class="center">$'.$value.'</td>
+              <td class="center '.($_SESSION['player']->portfolio->stock_purchase_prices[$stock_symbol] <= $_SESSION['stocks'][$stock_symbol]->price ? 'gain' : 'loss').'">$'.number_format($_SESSION['stocks'][$stock_symbol]->price - $_SESSION['player']->portfolio->stock_purchase_prices[$stock_symbol], 2).'</td>
               <td class="center"><a href="?action=sell&sell_stock_symbol='.$stock_symbol.'" title="sell all of this stock"><i class="fa fa-money"></i></a></td>
             </tr>';
           }
@@ -213,17 +159,20 @@ $message = $_SESSION['my_portfolio']->did_win() ? array('result'=>true, 'message
   </div><!--/.container -->
 
   <footer class="page-footer nav_color">
-        <div class="row">
-          <div class="col s12">
-            2017 created by Jon Link (<a href="https://www.linkedin.com/in/jon-link/">LinkedIn</a> | <a href="https://github.com/jonnylink">Github</a>)
-          </div>
-        </div>
+    <div class="row">
+      <div class="col s12">
+        &copy;2017 created by Jon Link ( <a href="https://www.linkedin.com/in/jon-link/">LinkedIn</a> | <a href="https://github.com/jonnylink">Github</a> )
+        Licensed under the <a href="https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29">GNU General Public License v3</a>
       </div>
     </div>
   </footer>
 
   <script>
     $(document).ready(function() {
+      if(!<?php echo $_SESSION['player']->is_winner() ? 'true' : 'false'; ?>){
+        setInterval( () => { window.location.assign(window.location.pathname); }, <?php echo $_SESSION['player']->round_time; ?>);
+        setInterval( () => { document.getElementById('timer').innerHTML = document.getElementById('timer').innerHTML - 1; }, 1000);
+      }
       $('select').material_select();
     });
   </script>
